@@ -1,0 +1,57 @@
+{
+    "name": "astrotomic/php-deepface",
+    "description": "A ",
+    "license": "MIT",
+    "keywords": [
+        "facial-recognition",
+        "face-recognition",
+        "openface",
+        "facenet",
+        "face-analysis",
+        "facial-expression-recognition",
+        "emotion-recognition",
+        "age-prediction",
+        "gender-prediction",
+        "deepid",
+        "vgg-face",
+        "deepface",
+        "arcface",
+        "race-classification"
+    ],
+    "authors": [
+        {
+            "name": "Tom Witkowski",
+            "email": "gummibeer@astrotomic.info",
+            "homepage": "https://astrotomic.info",
+            "role": "Developer"
+        }
+    ],
+    "homepage": "https://github.com/Gummibeer/php-deepface",
+    "support": {
+        "issues": "https://github.com/Gummibeer/php-deepface/issues"
+    },
+    "require": {
+        "php": "^8.1",
+        "symfony/process": "^6.0"
+    },
+    "require-dev": {
+        "laravel/pint": "^1.13",
+        "spatie/ray": "^1.39"
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true,
+    "autoload": {
+        "psr-4": {
+            "Astrotomic\\DeepFace\\": "src"
+        }
+    },
+    "config": {
+        "allow-plugins": {
+            "pestphp/pest-plugin": true
+        },
+        "sort-packages": true
+    },
+    "scripts": {
+        "fix": "@php vendor/bin/pint"
+    }
+}
