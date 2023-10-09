@@ -10,8 +10,9 @@ use Astrotomic\DeepFace\Enums\AnalyzeAction;
 use Astrotomic\DeepFace\Enums\Detector;
 use Astrotomic\DeepFace\Enums\DistanceMetric;
 use Astrotomic\DeepFace\Enums\Emotion;
+use Astrotomic\DeepFace\Enums\FaceRecognitionModel;
+use Astrotomic\DeepFace\Enums\FacialAttributeModel;
 use Astrotomic\DeepFace\Enums\Gender;
-use Astrotomic\DeepFace\Enums\Model;
 use Astrotomic\DeepFace\Enums\Normalization;
 use Astrotomic\DeepFace\Enums\Race;
 use BadMethodCallException;
@@ -32,10 +33,20 @@ class DeepFace
         );
     }
 
+    public function buildModel(FaceRecognitionModel|FacialAttributeModel $model_name): bool
+    {
+        return $this->run(
+            filepath: __DIR__.'/../scripts/build_model.py',
+            data: [
+                '{{model_name}}' => $model_name->value,
+            ],
+        );
+    }
+
     public function verify(
         string $img1_path,
         string $img2_path,
-        Model $model_name = Model::VGGFACE,
+        FaceRecognitionModel $model_name = FaceRecognitionModel::VGGFACE,
         Detector $detector_backend = Detector::OPENCV,
         DistanceMetric $distance_metric = DistanceMetric::COSINE,
         bool $enforce_detection = true,
@@ -70,7 +81,7 @@ class DeepFace
             verified: $output['verified'] === 'True',
             distance: $output['distance'],
             threshold: $output['threshold'],
-            model: Model::from($output['model']),
+            model: FaceRecognitionModel::from($output['model']),
             detector_backend: Detector::from($output['detector_backend']),
             similarity_metric: DistanceMetric::from($output['similarity_metric']),
             img1_path: $img1->getRealPath(),
@@ -172,7 +183,7 @@ class DeepFace
         );
     }
 
-    protected function run(string $filepath, array $data): array
+    protected function run(string $filepath, array $data): array|bool
     {
         $script = $this->script($filepath, $data);
         $process = $this->process($script);
