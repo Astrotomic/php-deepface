@@ -3,6 +3,7 @@
 namespace Astrotomic\DeepFace;
 
 use Astrotomic\DeepFace\Data\AnalyzeResult;
+use Astrotomic\DeepFace\Data\ExtractFaceResult;
 use Astrotomic\DeepFace\Data\FaceArea;
 use Astrotomic\DeepFace\Data\VerifyResult;
 use Astrotomic\DeepFace\Enums\AnalyzeAction;
@@ -128,6 +129,44 @@ class DeepFace
                 dominant_gender: isset($result['dominant_gender']) ? Gender::from($result['dominant_gender']) : null,
                 race: $result['race'] ?? null,
                 dominant_race: isset($result['dominant_race']) ? Race::from($result['dominant_race']) : null,
+            ),
+            $output
+        );
+    }
+
+    /**
+     * @return ExtractFaceResult[]
+     */
+    public function extractFaces(
+        string $img_path,
+        array $target_size = [224, 224],
+        Detector $detector_backend = Detector::OPENCV,
+        bool $enforce_detection = true,
+        bool $align = true,
+        bool $grayscale = false,
+    ): array {
+        $img = new SplFileInfo($img_path);
+
+        if (! $img->isFile()) {
+            throw new InvalidArgumentException("The path [{$img_path}] for image is not a file.");
+        }
+
+        $output = $this->run(
+            filepath: __DIR__.'/../scripts/extract_faces.py',
+            data: [
+                '{{img_path}}' => $img->getRealPath(),
+                '{{target_size}}' => '['.implode(',', $target_size).']',
+                '{{enforce_detection}}' => $enforce_detection ? 'True' : 'False',
+                '{{detector_backend}}' => $detector_backend->value,
+                '{{align}}' => $align ? 'True' : 'False',
+                '{{grayscale}}' => $grayscale ? 'True' : 'False',
+            ],
+        );
+
+        return array_map(
+            fn (array $result) => new ExtractFaceResult(
+                facial_area: new FaceArea(...$result['facial_area']),
+                confidence: $result['confidence']
             ),
             $output
         );
