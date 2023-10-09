@@ -2,12 +2,18 @@
 
 namespace Astrotomic\DeepFace;
 
+use Astrotomic\DeepFace\Data\AnalyzeResult;
 use Astrotomic\DeepFace\Data\FaceArea;
 use Astrotomic\DeepFace\Data\VerifyResult;
+use Astrotomic\DeepFace\Enums\AnalyzeAction;
 use Astrotomic\DeepFace\Enums\Detector;
 use Astrotomic\DeepFace\Enums\DistanceMetric;
+use Astrotomic\DeepFace\Enums\Emotion;
+use Astrotomic\DeepFace\Enums\Gender;
 use Astrotomic\DeepFace\Enums\Model;
 use Astrotomic\DeepFace\Enums\Normalization;
+use Astrotomic\DeepFace\Enums\Race;
+use BadMethodCallException;
 use InvalidArgumentException;
 use SplFileInfo;
 use Symfony\Component\Process\ExecutableFinder;
@@ -57,7 +63,6 @@ class DeepFace
                 '{{distance_metric}}' => $distance_metric->value,
                 '{{normalization}}' => $normalization->value,
             ],
-            timeout: 60 * 5
         );
 
         return new VerifyResult(
@@ -75,17 +80,84 @@ class DeepFace
         );
     }
 
-    protected function run(string $filepath, array $data, int $timeout): array
-    {
-        $script = $this->script($filepath, $data);
-        $process = $this->process($script, $timeout);
+    /**
+     * @return AnalyzeResult[]
+     */
+    public function analyze(
+        string $img_path,
+        array $actions = [AnalyzeAction::EMOTION, AnalyzeAction::AGE, AnalyzeAction::RACE, AnalyzeAction::GENDER],
+        bool $enforce_detection = true,
+        Detector $detector_backend = Detector::OPENCV,
+        bool $align = true,
+        bool $silent = false,
+    ): array {
+        $img = new SplFileInfo($img_path);
 
-        $output = $process->mustRun()->getOutput();
+        if (! $img->isFile()) {
+            throw new InvalidArgumentException("The path [{$img_path}] for image is not a file.");
+        }
 
-        return json_decode($output, true, 512, JSON_THROW_ON_ERROR);
+        $actions = array_map(
+            fn (mixed $action): AnalyzeAction => match (true) {
+                is_string($action) => AnalyzeAction::from($action),
+                $action instanceof AnalyzeAction => $action,
+                default => throw new InvalidArgumentException('The action ['.gettype($action).'] provided is not a valid action type.'),
+            },
+            $actions
+        );
+
+        $output = $this->run(
+            filepath: __DIR__.'/../scripts/analyze.py',
+            data: [
+                '{{img_path}}' => $img->getRealPath(),
+                '{{actions}}' => '['.implode(',', array_map(fn (AnalyzeAction $action) => "'{$action->value}'", $actions)).']',
+                '{{enforce_detection}}' => $enforce_detection ? 'True' : 'False',
+                '{{detector_backend}}' => $detector_backend->value,
+                '{{align}}' => $align ? 'True' : 'False',
+                '{{silent}}' => $silent ? 'True' : 'False',
+            ],
+        );
+
+        return array_map(
+            fn (array $result) => new AnalyzeResult(
+                region: new FaceArea(...$result['region']),
+                emotion: $result['emotion'] ?? null,
+                dominant_emotion: isset($result['dominant_emotion']) ? Emotion::from($result['dominant_emotion']) : null,
+                age: $result['age'] ?? null,
+                gender: $result['gender'] ?? null,
+                dominant_gender: isset($result['dominant_gender']) ? Gender::from($result['dominant_gender']) : null,
+                race: $result['race'] ?? null,
+                dominant_race: isset($result['dominant_race']) ? Race::from($result['dominant_race']) : null,
+            ),
+            $output
+        );
     }
 
-    protected function process(string $script, int $timeout): Process
+    protected function run(string $filepath, array $data): array
+    {
+        $script = $this->script($filepath, $data);
+        $process = $this->process($script);
+
+        $output = $process
+            ->mustRun()
+            ->getOutput();
+
+        $lines = array_values(array_filter(explode(PHP_EOL, $output), function (string $line): bool {
+            json_decode($line, true);
+
+            return json_last_error() === JSON_ERROR_NONE;
+        }));
+
+        if (empty($lines)) {
+            throw new BadMethodCallException('Python deepface script has not returned with any JSON.');
+        }
+
+        $json = $lines[0];
+
+        return json_decode($json, true, 512, JSON_THROW_ON_ERROR);
+    }
+
+    protected function process(string $script): Process
     {
         $process = new Process([
             $this->python,
@@ -93,7 +165,9 @@ class DeepFace
             $script,
         ]);
 
-        return $process->setTimeout($timeout);
+        return $process
+            ->setTimeout(null)
+            ->setIdleTimeout(60 * 5);
     }
 
     protected function script(string $filepath, $data): string
