@@ -28,11 +28,11 @@ class DeepFace
     public function verify(
         string $img1_path,
         string $img2_path,
-        bool $enforce_detection = true,
-        bool $align = true,
         Model $model_name = Model::VGGFACE,
         Detector $detector_backend = Detector::OPENCV,
         DistanceMetric $distance_metric = DistanceMetric::COSINE,
+        bool $enforce_detection = true,
+        bool $align = true,
         Normalization $normalization = Normalization::BASE,
     ): VerifyResult {
         $img1 = new SplFileInfo($img1_path);
