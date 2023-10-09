@@ -4,7 +4,7 @@ namespace Astrotomic\DeepFace\Data;
 
 use Astrotomic\DeepFace\Enums\Detector;
 use Astrotomic\DeepFace\Enums\DistanceMetric;
-use Astrotomic\DeepFace\Enums\Model;
+use Astrotomic\DeepFace\Enums\FaceRecognitionModel;
 
 class VerifyResult
 {
@@ -12,7 +12,7 @@ class VerifyResult
         public readonly bool $verified,
         public readonly float $distance,
         public readonly float $threshold,
-        public readonly Model $model,
+        public readonly FaceRecognitionModel $model,
         public readonly Detector $detector_backend,
         public readonly DistanceMetric $similarity_metric,
         public readonly string $img1_path,

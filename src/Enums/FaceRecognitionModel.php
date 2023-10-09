@@ -2,7 +2,7 @@
 
 namespace Astrotomic\DeepFace\Enums;
 
-enum Model: string
+enum FaceRecognitionModel: string
 {
     case VGGFACE = 'VGG-Face';
     case FACENET = 'Facenet';
