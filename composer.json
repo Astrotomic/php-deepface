@@ -1,6 +1,6 @@
 {
     "name": "astrotomic/php-deepface",
-    "description": "A ",
+    "description": "A PHP adapter for the python deepface framework.",
     "license": "MIT",
     "keywords": [
         "facial-recognition",
