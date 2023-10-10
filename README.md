@@ -91,7 +91,13 @@ $deepface->find(
 
 ### Face Embeddings
 
-Generate vector embeddings for facial images using convolutional neural networks models (To Do).
+Generate vector embeddings for facial images using convolutional neural networks models:
+
+```php
+$deepface->represent(
+  img_path: '~/test.png',
+);
+```
 
 ### Facial Attribute Analysis
 
