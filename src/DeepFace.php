@@ -134,7 +134,9 @@ class DeepFace
 
         return array_map(
             fn (array $result) => new AnalyzeResult(
-                region: new FacialArea(...$result['region']),
+                img_path: $img->getRealPath(),
+                detector_backend: $detector_backend,
+                facial_area: new FacialArea(...$result['region']),
                 emotion: $result['emotion'] ?? null,
                 dominant_emotion: isset($result['dominant_emotion']) ? Emotion::from($result['dominant_emotion']) : null,
                 age: $result['age'] ?? null,
@@ -178,8 +180,10 @@ class DeepFace
 
         return array_map(
             fn (array $result) => new ExtractFaceResult(
+                img_path: $img->getRealPath(),
                 facial_area: new FacialArea(...$result['facial_area']),
-                confidence: $result['confidence']
+                confidence: $result['confidence'],
+                detector_backend: $detector_backend,
             ),
             $output
         );

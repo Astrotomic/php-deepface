@@ -2,7 +2,9 @@
 
 namespace Astrotomic\DeepFace\Data;
 
-class FacialArea
+use JsonSerializable;
+
+class FacialArea implements JsonSerializable
 {
     public function __construct(
         public readonly int $x,
@@ -10,5 +12,15 @@ class FacialArea
         public readonly int $w,
         public readonly int $h,
     ) {
+    }
+
+    public function jsonSerialize(): array
+    {
+        return [
+            'x' => $this->x,
+            'y' => $this->y,
+            'w' => $this->w,
+            'h' => $this->h,
+        ];
     }
 }
