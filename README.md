@@ -2,6 +2,12 @@
 
 ## Installation
 
+First you have to install the [deepface](https://github.com/serengil/deepface/tree/master#installation--) python framework.
+```bash
+pip install deepface
+```
+
+After that you can install the PHP adapter via composer.
 ```bash
 composer install astrotomic/php-deepface
 ```
