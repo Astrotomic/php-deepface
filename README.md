@@ -26,7 +26,7 @@ pip install deepface
 Once you've installed deepface, you can then install the PHP adapter via Composer:
 
 ```bash
-composer install astrotomic/php-deepface
+composer require astrotomic/php-deepface
 ```
 
 ## Configuration
