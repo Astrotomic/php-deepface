@@ -14,7 +14,7 @@ class AnalyzeResult
      * @param  array<Race, float>|null  $race
      */
     public function __construct(
-        public readonly FaceArea $region,
+        public readonly FacialArea $region,
         public readonly ?array $emotion,
         public readonly ?Emotion $dominant_emotion,
         public readonly ?int $age,
