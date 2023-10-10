@@ -4,7 +4,8 @@ namespace Astrotomic\DeepFace;
 
 use Astrotomic\DeepFace\Data\AnalyzeResult;
 use Astrotomic\DeepFace\Data\ExtractFaceResult;
-use Astrotomic\DeepFace\Data\FaceArea;
+use Astrotomic\DeepFace\Data\FacialArea;
+use Astrotomic\DeepFace\Data\FindResult;
 use Astrotomic\DeepFace\Data\VerifyResult;
 use Astrotomic\DeepFace\Enums\AnalyzeAction;
 use Astrotomic\DeepFace\Enums\Detector;
@@ -83,11 +84,11 @@ class DeepFace
             threshold: $output['threshold'],
             model: FaceRecognitionModel::from($output['model']),
             detector_backend: Detector::from($output['detector_backend']),
-            similarity_metric: DistanceMetric::from($output['similarity_metric']),
+            distance_metric: DistanceMetric::from($output['similarity_metric']),
             img1_path: $img1->getRealPath(),
-            img1_facial_area: new FaceArea(...$output['facial_areas']['img1']),
+            img1_facial_area: new FacialArea(...$output['facial_areas']['img1']),
             img2_path: $img2->getRealPath(),
-            img2_facial_area: new FaceArea(...$output['facial_areas']['img2']),
+            img2_facial_area: new FacialArea(...$output['facial_areas']['img2']),
             time: $output['time'],
         );
     }
@@ -132,7 +133,7 @@ class DeepFace
 
         return array_map(
             fn (array $result) => new AnalyzeResult(
-                region: new FaceArea(...$result['region']),
+                region: new FacialArea(...$result['region']),
                 emotion: $result['emotion'] ?? null,
                 dominant_emotion: isset($result['dominant_emotion']) ? Emotion::from($result['dominant_emotion']) : null,
                 age: $result['age'] ?? null,
@@ -176,11 +177,72 @@ class DeepFace
 
         return array_map(
             fn (array $result) => new ExtractFaceResult(
-                facial_area: new FaceArea(...$result['facial_area']),
+                facial_area: new FacialArea(...$result['facial_area']),
                 confidence: $result['confidence']
             ),
             $output
         );
+    }
+
+    /**
+     * @return FindResult[]
+     */
+    public function find(
+        string $img_path,
+        string $db_path,
+        FaceRecognitionModel $model_name = FaceRecognitionModel::VGGFACE,
+        DistanceMetric $distance_metric = DistanceMetric::COSINE,
+        bool $enforce_detection = true,
+        Detector $detector_backend = Detector::OPENCV,
+        bool $align = true,
+        Normalization $normalization = Normalization::BASE,
+        bool $silent = false,
+    ): array {
+        $img = new SplFileInfo($img_path);
+        $db = new SplFileInfo($db_path);
+
+        if (! $img->isFile()) {
+            throw new InvalidArgumentException("The path [{$img_path}] for image is not a file.");
+        }
+
+        if (! $db->isDir()) {
+            throw new InvalidArgumentException("The path [{$db_path}] for database is not a directory.");
+        }
+
+        $output = $this->run(
+            filepath: __DIR__.'/../scripts/find.py',
+            data: [
+                '{{img_path}}' => $img->getRealPath(),
+                '{{db_path}}' => $db->getRealPath(),
+                '{{model_name}}' => $model_name->value,
+                '{{distance_metric}}' => $distance_metric->value,
+                '{{enforce_detection}}' => $enforce_detection ? 'True' : 'False',
+                '{{detector_backend}}' => $detector_backend->value,
+                '{{align}}' => $align ? 'True' : 'False',
+                '{{normalization}}' => $normalization->value,
+                '{{silent}}' => $silent ? 'True' : 'False',
+            ],
+        );
+
+        $result = [];
+        foreach ($output['identity'] as $i => $identity) {
+            $result[] = new FindResult(
+                identity_img_path: $identity,
+                source_img_path: $img->getRealPath(),
+                source_facial_area: new FacialArea(
+                    x: $output['source_x'][$i],
+                    y: $output['source_y'][$i],
+                    w: $output['source_w'][$i],
+                    h: $output['source_h'][$i],
+                ),
+                model: $model_name,
+                detector_backend: $detector_backend,
+                distance_metric: $distance_metric,
+                distance: $output["{$model_name->value}_{$distance_metric->value}"][$i],
+            );
+        }
+
+        return $result;
     }
 
     protected function run(string $filepath, array $data): array|bool

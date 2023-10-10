@@ -2,7 +2,7 @@
 
 namespace Astrotomic\DeepFace\Data;
 
-class FaceArea
+class FacialArea
 {
     public function __construct(
         public readonly int $x,
