@@ -6,6 +6,7 @@ use Astrotomic\DeepFace\Data\AnalyzeResult;
 use Astrotomic\DeepFace\Data\ExtractFaceResult;
 use Astrotomic\DeepFace\Data\FacialArea;
 use Astrotomic\DeepFace\Data\FindResult;
+use Astrotomic\DeepFace\Data\RepresentResult;
 use Astrotomic\DeepFace\Data\VerifyResult;
 use Astrotomic\DeepFace\Enums\AnalyzeAction;
 use Astrotomic\DeepFace\Enums\Detector;
@@ -243,6 +244,47 @@ class DeepFace
         }
 
         return $result;
+    }
+
+    /**
+     * @return RepresentResult[]
+     */
+    public function represent(
+        string $img_path,
+        FaceRecognitionModel $model_name = FaceRecognitionModel::VGGFACE,
+        bool $enforce_detection = true,
+        Detector $detector_backend = Detector::OPENCV,
+        bool $align = true,
+        Normalization $normalization = Normalization::BASE,
+    ): array {
+        $img = new SplFileInfo($img_path);
+
+        if (! $img->isFile()) {
+            throw new InvalidArgumentException("The path [{$img_path}] for image is not a file.");
+        }
+
+        $output = $this->run(
+            filepath: __DIR__.'/../scripts/represent.py',
+            data: [
+                '{{img_path}}' => $img->getRealPath(),
+                '{{model_name}}' => $model_name->value,
+                '{{enforce_detection}}' => $enforce_detection ? 'True' : 'False',
+                '{{detector_backend}}' => $detector_backend->value,
+                '{{align}}' => $align ? 'True' : 'False',
+                '{{normalization}}' => $normalization->value,
+            ],
+        );
+
+        return array_map(
+            fn (array $result) => new RepresentResult(
+                img_path: $img->getRealPath(),
+                embedding: $result['embedding'],
+                facial_area: new FacialArea(...$result['facial_area']),
+                model: $model_name,
+                detector_backend: $detector_backend,
+            ),
+            $output
+        );
     }
 
     protected function run(string $filepath, array $data): array|bool
