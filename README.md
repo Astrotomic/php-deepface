@@ -12,6 +12,7 @@
 [![Total Downloads](https://img.shields.io/packagist/dt/astrotomic/php-deepface.svg?label=Downloads&style=flat-square)](https://packagist.org/packages/astrotomic/php-deepface)
 [![Trees](https://img.shields.io/ecologi/trees/astrotomic?style=flat-square)](https://forest.astrotomic.info)
 [![Carbon](https://img.shields.io/ecologi/carbon/astrotomic?style=flat-square)](https://forest.astrotomic.info)
+[![GitHub Sponsors](https://img.shields.io/github/sponsors/gummibeer?style=flat-square)](https://github.com/sponsors/Gummibeer)
 
 Welcome to PHP DeepFace, a powerful face recognition and facial attribute analysis package for PHP. With PHP DeepFace, you can effortlessly integrate cutting-edge deep learning models into your PHP applications for a wide range of face-related tasks. Here's how you can get started:
 
