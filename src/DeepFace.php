@@ -239,6 +239,8 @@ class DeepFace
                     y: $output['source_y'][$i],
                     w: $output['source_w'][$i],
                     h: $output['source_h'][$i],
+                    left_eye: null,
+                    right_eye: null
                 ),
                 model: $model_name,
                 detector_backend: $detector_backend,
