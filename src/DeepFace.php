@@ -18,10 +18,13 @@ use Astrotomic\DeepFace\Enums\Gender;
 use Astrotomic\DeepFace\Enums\Normalization;
 use Astrotomic\DeepFace\Enums\Race;
 use BadMethodCallException;
+use Exception;
 use InvalidArgumentException;
 use SplFileInfo;
 use Symfony\Component\Process\ExecutableFinder;
 use Symfony\Component\Process\Process;
+
+class DeepFaceAnalysisException extends Exception {}
 
 class DeepFace
 {
@@ -54,6 +57,7 @@ class DeepFace
         bool $enforce_detection = true,
         bool $align = true,
         Normalization $normalization = Normalization::BASE,
+        bool $anti_spoofing = false,
     ): VerifyResult {
         $img1 = new SplFileInfo($img1_path);
         $img2 = new SplFileInfo($img2_path);
@@ -65,19 +69,25 @@ class DeepFace
             throw new InvalidArgumentException("The path [{$img2_path}] for image#2 is not a file.");
         }
 
-        $output = $this->run(
-            filepath: __DIR__.'/../scripts/verify.py',
-            data: [
-                '{{img1_path}}' => $img1->getRealPath(),
-                '{{img2_path}}' => $img2->getRealPath(),
-                '{{enforce_detection}}' => $enforce_detection ? 'True' : 'False',
-                '{{align}}' => $align ? 'True' : 'False',
-                '{{model_name}}' => $model_name->value,
-                '{{detector_backend}}' => $detector_backend->value,
-                '{{distance_metric}}' => $distance_metric->value,
-                '{{normalization}}' => $normalization->value,
-            ],
-        );
+        try{
+            $output = $this->run(
+                filepath: __DIR__.'/../scripts/verify.py',
+                data: [
+                    '{{img1_path}}' => $img1->getRealPath(),
+                    '{{img2_path}}' => $img2->getRealPath(),
+                    '{{anti_spoofing}}' => $anti_spoofing ? 'True' : 'False',
+                    '{{enforce_detection}}' => $enforce_detection ? 'True' : 'False',
+                    '{{anti_spoofing}}' => $anti_spoofing ? 'True' : 'False',
+                    '{{align}}' => $align ? 'True' : 'False',
+                    '{{model_name}}' => $model_name->value,
+                    '{{detector_backend}}' => $detector_backend->value,
+                    '{{distance_metric}}' => $distance_metric->value,
+                    '{{normalization}}' => $normalization->value,
+                ],
+            );
+        } catch(DeepFaceAnalysisException $e){
+            return array("error" => $e->getMessage());
+        }
 
         return new VerifyResult(
             verified: $output['verified'] === 'True',
@@ -104,6 +114,7 @@ class DeepFace
         Detector $detector_backend = Detector::OPENCV,
         bool $align = true,
         bool $silent = false,
+        bool $anti_spoofing = false,
     ): array {
         $img = new SplFileInfo($img_path);
 
@@ -120,17 +131,22 @@ class DeepFace
             $actions
         );
 
-        $output = $this->run(
-            filepath: __DIR__.'/../scripts/analyze.py',
-            data: [
-                '{{img_path}}' => $img->getRealPath(),
-                '{{actions}}' => '['.implode(',', array_map(fn (AnalyzeAction $action) => "'{$action->value}'", $actions)).']',
-                '{{enforce_detection}}' => $enforce_detection ? 'True' : 'False',
-                '{{detector_backend}}' => $detector_backend->value,
-                '{{align}}' => $align ? 'True' : 'False',
-                '{{silent}}' => $silent ? 'True' : 'False',
-            ],
-        );
+        try{
+            $output = $this->run(
+                filepath: __DIR__.'/../scripts/analyze.py',
+                data: [
+                    '{{img_path}}' => str_replace('\\', '/', $img->getRealPath()),
+                    '{{actions}}' => '['.implode(',', array_map(fn (AnalyzeAction $action) => "'{$action->value}'", $actions)).']',
+                    '{{enforce_detection}}' => $enforce_detection ? 'True' : 'False',
+                    '{{anti_spoofing}}' => $anti_spoofing ? 'True' : 'False',
+                    '{{detector_backend}}' => $detector_backend->value,
+                    '{{align}}' => $align ? 'True' : 'False',
+                    '{{silent}}' => $silent ? 'True' : 'False',
+                ],
+            );
+        } catch(DeepFaceAnalysisException $e){
+            return array("error" => $e->getMessage());
+        }
 
         return array_map(
             fn (array $result) => new AnalyzeResult(
@@ -159,6 +175,7 @@ class DeepFace
         bool $enforce_detection = true,
         bool $align = true,
         bool $grayscale = false,
+        bool $anti_spoofing = false,
     ): array {
         $img = new SplFileInfo($img_path);
 
@@ -166,17 +183,22 @@ class DeepFace
             throw new InvalidArgumentException("The path [{$img_path}] for image is not a file.");
         }
 
-        $output = $this->run(
-            filepath: __DIR__.'/../scripts/extract_faces.py',
-            data: [
-                '{{img_path}}' => $img->getRealPath(),
-                '{{target_size}}' => '['.implode(',', $target_size).']',
-                '{{enforce_detection}}' => $enforce_detection ? 'True' : 'False',
-                '{{detector_backend}}' => $detector_backend->value,
-                '{{align}}' => $align ? 'True' : 'False',
-                '{{grayscale}}' => $grayscale ? 'True' : 'False',
-            ],
-        );
+        try{
+            $output = $this->run(
+                filepath: __DIR__.'/../scripts/extract_faces.py',
+                data: [
+                    '{{img_path}}' => $img->getRealPath(),
+                    '{{target_size}}' => '['.implode(',', $target_size).']',
+                    '{{enforce_detection}}' => $enforce_detection ? 'True' : 'False',
+                    '{{anti_spoofing}}' => $anti_spoofing ? 'True' : 'False',
+                    '{{detector_backend}}' => $detector_backend->value,
+                    '{{align}}' => $align ? 'True' : 'False',
+                    '{{grayscale}}' => $grayscale ? 'True' : 'False',
+                ],
+            );
+        } catch(DeepFaceAnalysisException $e){
+            return array("error" => $e->getMessage());
+        }
 
         return array_map(
             fn (array $result) => new ExtractFaceResult(
@@ -202,6 +224,7 @@ class DeepFace
         bool $align = true,
         Normalization $normalization = Normalization::BASE,
         bool $silent = false,
+        bool $anti_spoofing = false,
     ): array {
         $img = new SplFileInfo($img_path);
         $db = new SplFileInfo($db_path);
@@ -214,20 +237,25 @@ class DeepFace
             throw new InvalidArgumentException("The path [{$db_path}] for database is not a directory.");
         }
 
-        $output = $this->run(
-            filepath: __DIR__.'/../scripts/find.py',
-            data: [
-                '{{img_path}}' => $img->getRealPath(),
-                '{{db_path}}' => $db->getRealPath(),
-                '{{model_name}}' => $model_name->value,
-                '{{distance_metric}}' => $distance_metric->value,
-                '{{enforce_detection}}' => $enforce_detection ? 'True' : 'False',
-                '{{detector_backend}}' => $detector_backend->value,
-                '{{align}}' => $align ? 'True' : 'False',
-                '{{normalization}}' => $normalization->value,
-                '{{silent}}' => $silent ? 'True' : 'False',
-            ],
-        );
+        try{
+            $output = $this->run(
+                filepath: __DIR__.'/../scripts/find.py',
+                data: [
+                    '{{img_path}}' => $img->getRealPath(),
+                    '{{db_path}}' => $db->getRealPath(),
+                    '{{model_name}}' => $model_name->value,
+                    '{{distance_metric}}' => $distance_metric->value,
+                    '{{enforce_detection}}' => $enforce_detection ? 'True' : 'False',
+                    '{{anti_spoofing}}' => $anti_spoofing ? 'True' : 'False',
+                    '{{detector_backend}}' => $detector_backend->value,
+                    '{{align}}' => $align ? 'True' : 'False',
+                    '{{normalization}}' => $normalization->value,
+                    '{{silent}}' => $silent ? 'True' : 'False',
+                ],
+            );
+        } catch(DeepFaceAnalysisException $e){
+            return array("error" => $e->getMessage());
+        }
 
         $result = [];
         foreach ($output['identity'] as $i => $identity) {
@@ -239,6 +267,8 @@ class DeepFace
                     y: $output['source_y'][$i],
                     w: $output['source_w'][$i],
                     h: $output['source_h'][$i],
+                    left_eye: null,
+                    right_eye: null
                 ),
                 model: $model_name,
                 detector_backend: $detector_backend,
@@ -299,6 +329,21 @@ class DeepFace
         $output = $process
             ->mustRun()
             ->getOutput();
+
+        $errorOutput = $process->getErrorOutput();
+
+        if(!empty($errorOutput)){
+            if (preg_match_all('/\{(?:[^{}]|(?R))*\}/', $errorOutput, $matches)) {
+                $lastJson = end($matches[0]);
+                $errorResult = json_decode($lastJson, true);
+
+                if ($errorResult !== null && isset($errorResult['error'])) {
+                    throw new DeepFaceAnalysisException($errorResult['error']); // should return 'Spoof detected in the given image'
+                } else {
+                    throw new DeepFaceAnalysisException("Failed to parse error message: " . $lastJson);
+                }
+            }
+        }
 
         $lines = array_values(array_filter(explode(PHP_EOL, $output), function (string $line): bool {
             json_decode($line, true);
