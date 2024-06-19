@@ -73,8 +73,8 @@ class DeepFace
             $output = $this->run(
                 filepath: __DIR__.'/../scripts/verify.py',
                 data: [
-                    '{{img1_path}}' => $img1->getRealPath(),
-                    '{{img2_path}}' => $img2->getRealPath(),
+                    '{{img1_path}}' => str_replace('\\', '/', $img1->getRealPath()),
+                    '{{img2_path}}' => str_replace('\\', '/', $img2->getRealPath()),
                     '{{anti_spoofing}}' => $anti_spoofing ? 'True' : 'False',
                     '{{enforce_detection}}' => $enforce_detection ? 'True' : 'False',
                     '{{anti_spoofing}}' => $anti_spoofing ? 'True' : 'False',
@@ -187,7 +187,7 @@ class DeepFace
             $output = $this->run(
                 filepath: __DIR__.'/../scripts/extract_faces.py',
                 data: [
-                    '{{img_path}}' => $img->getRealPath(),
+                    '{{img_path}}' => str_replace('\\', '/', $img->getRealPath()),
                     '{{target_size}}' => '['.implode(',', $target_size).']',
                     '{{enforce_detection}}' => $enforce_detection ? 'True' : 'False',
                     '{{anti_spoofing}}' => $anti_spoofing ? 'True' : 'False',
@@ -241,7 +241,7 @@ class DeepFace
             $output = $this->run(
                 filepath: __DIR__.'/../scripts/find.py',
                 data: [
-                    '{{img_path}}' => $img->getRealPath(),
+                    '{{img_path}}' => str_replace('\\', '/', $img->getRealPath()),
                     '{{db_path}}' => $db->getRealPath(),
                     '{{model_name}}' => $model_name->value,
                     '{{distance_metric}}' => $distance_metric->value,
@@ -300,7 +300,7 @@ class DeepFace
         $output = $this->run(
             filepath: __DIR__.'/../scripts/represent.py',
             data: [
-                '{{img_path}}' => $img->getRealPath(),
+                '{{img_path}}' => str_replace('\\', '/', $img->getRealPath()),
                 '{{model_name}}' => $model_name->value,
                 '{{enforce_detection}}' => $enforce_detection ? 'True' : 'False',
                 '{{detector_backend}}' => $detector_backend->value,
