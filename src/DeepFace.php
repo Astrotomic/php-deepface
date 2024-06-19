@@ -17,14 +17,13 @@ use Astrotomic\DeepFace\Enums\FacialAttributeModel;
 use Astrotomic\DeepFace\Enums\Gender;
 use Astrotomic\DeepFace\Enums\Normalization;
 use Astrotomic\DeepFace\Enums\Race;
+use Astrotomic\DeepFace\Exceptions\DeepFaceException;
 use BadMethodCallException;
 use Exception;
 use InvalidArgumentException;
 use SplFileInfo;
 use Symfony\Component\Process\ExecutableFinder;
 use Symfony\Component\Process\Process;
-
-class DeepFaceAnalysisException extends Exception {}
 
 class DeepFace
 {
@@ -85,7 +84,7 @@ class DeepFace
                     '{{normalization}}' => $normalization->value,
                 ],
             );
-        } catch(DeepFaceAnalysisException $e){
+        } catch(DeepFaceException $e){
             return array("error" => $e->getMessage());
         }
 
@@ -144,7 +143,7 @@ class DeepFace
                     '{{silent}}' => $silent ? 'True' : 'False',
                 ],
             );
-        } catch(DeepFaceAnalysisException $e){
+        } catch(DeepFaceException $e){
             return array("error" => $e->getMessage());
         }
 
@@ -196,7 +195,7 @@ class DeepFace
                     '{{grayscale}}' => $grayscale ? 'True' : 'False',
                 ],
             );
-        } catch(DeepFaceAnalysisException $e){
+        } catch(DeepFaceException $e){
             return array("error" => $e->getMessage());
         }
 
@@ -253,7 +252,7 @@ class DeepFace
                     '{{silent}}' => $silent ? 'True' : 'False',
                 ],
             );
-        } catch(DeepFaceAnalysisException $e){
+        } catch(DeepFaceException $e){
             return array("error" => $e->getMessage());
         }
 
@@ -338,9 +337,9 @@ class DeepFace
                 $errorResult = json_decode($lastJson, true);
 
                 if ($errorResult !== null && isset($errorResult['error'])) {
-                    throw new DeepFaceAnalysisException($errorResult['error']); // should return 'Spoof detected in the given image'
+                    throw new DeepFaceException($errorResult['error']); // should return 'Spoof detected in the given image'
                 } else {
-                    throw new DeepFaceAnalysisException("Failed to parse error message: " . $lastJson);
+                    throw new DeepFaceException("Failed to parse error message: " . $lastJson);
                 }
             }
         }
