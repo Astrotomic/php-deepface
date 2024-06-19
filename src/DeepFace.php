@@ -289,6 +289,7 @@ class DeepFace
         Detector $detector_backend = Detector::OPENCV,
         bool $align = true,
         Normalization $normalization = Normalization::BASE,
+        bool $anti_spoofing = false,
     ): array {
         $img = new SplFileInfo($img_path);
 
@@ -296,17 +297,22 @@ class DeepFace
             throw new InvalidArgumentException("The path [{$img_path}] for image is not a file.");
         }
 
-        $output = $this->run(
-            filepath: __DIR__.'/../scripts/represent.py',
-            data: [
-                '{{img_path}}' => str_replace('\\', '/', $img->getRealPath()),
-                '{{model_name}}' => $model_name->value,
-                '{{enforce_detection}}' => $enforce_detection ? 'True' : 'False',
-                '{{detector_backend}}' => $detector_backend->value,
-                '{{align}}' => $align ? 'True' : 'False',
-                '{{normalization}}' => $normalization->value,
-            ],
-        );
+        try{
+            $output = $this->run(
+                filepath: __DIR__.'/../scripts/represent.py',
+                data: [
+                    '{{img_path}}' => str_replace('\\', '/', $img->getRealPath()),
+                    '{{model_name}}' => $model_name->value,
+                    '{{enforce_detection}}' => $enforce_detection ? 'True' : 'False',
+                    '{{anti_spoofing}}' => $anti_spoofing ? 'True' : 'False',
+                    '{{detector_backend}}' => $detector_backend->value,
+                    '{{align}}' => $align ? 'True' : 'False',
+                    '{{normalization}}' => $normalization->value,
+                ],
+            );
+        } catch(DeepFaceException $e){
+            return array("error" => $e->getMessage());
+        }
 
         return array_map(
             fn (array $result) => new RepresentResult(
