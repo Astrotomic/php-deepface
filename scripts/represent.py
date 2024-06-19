@@ -1,4 +1,5 @@
 import json;
+import sys;
 from deepface import DeepFace;
 
 result = DeepFace.represent(

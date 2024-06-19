@@ -57,7 +57,7 @@ class DeepFace
         bool $align = true,
         Normalization $normalization = Normalization::BASE,
         bool $anti_spoofing = false,
-    ): VerifyResult {
+    ): VerifyResult|array {
         $img1 = new SplFileInfo($img1_path);
         $img2 = new SplFileInfo($img2_path);
 
@@ -85,6 +85,7 @@ class DeepFace
                 ],
             );
         } catch(DeepFaceException $e){
+            // if any of these images fails the spoof detection, it will throw 'Exception while processing imgX_path'
             return array("error" => $e->getMessage());
         }
 
