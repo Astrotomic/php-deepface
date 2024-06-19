@@ -90,7 +90,7 @@ class DeepFace
         }
 
         return new VerifyResult(
-            verified: $output['verified'] === 'True',
+            verified: $output['verified'],
             distance: $output['distance'],
             threshold: $output['threshold'],
             model: FaceRecognitionModel::from($output['model']),
