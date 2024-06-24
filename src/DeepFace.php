@@ -74,7 +74,6 @@ class DeepFace
                 data: [
                     '{{img1_path}}' => str_replace('\\', '/', $img1->getRealPath()),
                     '{{img2_path}}' => str_replace('\\', '/', $img2->getRealPath()),
-                    '{{anti_spoofing}}' => $anti_spoofing ? 'True' : 'False',
                     '{{enforce_detection}}' => $enforce_detection ? 'True' : 'False',
                     '{{anti_spoofing}}' => $anti_spoofing ? 'True' : 'False',
                     '{{align}}' => $align ? 'True' : 'False',
