@@ -68,7 +68,7 @@ class DeepFace
             throw new InvalidArgumentException("The path [{$img2_path}] for image#2 is not a file.");
         }
 
-        try{
+        try {
             $output = $this->run(
                 filepath: __DIR__.'/../scripts/verify.py',
                 data: [
@@ -84,7 +84,7 @@ class DeepFace
                     '{{normalization}}' => $normalization->value,
                 ],
             );
-        } catch(DeepFaceException $e){
+        } catch(DeepFaceException $e) {
             // if any of these images fails the spoof detection, it will throw 'Exception while processing imgX_path'
             return array("error" => $e->getMessage());
         }
@@ -131,7 +131,7 @@ class DeepFace
             $actions
         );
 
-        try{
+        try {
             $output = $this->run(
                 filepath: __DIR__.'/../scripts/analyze.py',
                 data: [
@@ -144,7 +144,7 @@ class DeepFace
                     '{{silent}}' => $silent ? 'True' : 'False',
                 ],
             );
-        } catch(DeepFaceException $e){
+        } catch(DeepFaceException $e) {
             return array("error" => $e->getMessage());
         }
 
@@ -183,7 +183,7 @@ class DeepFace
             throw new InvalidArgumentException("The path [{$img_path}] for image is not a file.");
         }
 
-        try{
+        try {
             $output = $this->run(
                 filepath: __DIR__.'/../scripts/extract_faces.py',
                 data: [
@@ -196,7 +196,7 @@ class DeepFace
                     '{{grayscale}}' => $grayscale ? 'True' : 'False',
                 ],
             );
-        } catch(DeepFaceException $e){
+        } catch(DeepFaceException $e) {
             return array("error" => $e->getMessage());
         }
 
@@ -237,7 +237,7 @@ class DeepFace
             throw new InvalidArgumentException("The path [{$db_path}] for database is not a directory.");
         }
 
-        try{
+        try {
             $output = $this->run(
                 filepath: __DIR__.'/../scripts/find.py',
                 data: [
@@ -253,7 +253,7 @@ class DeepFace
                     '{{silent}}' => $silent ? 'True' : 'False',
                 ],
             );
-        } catch(DeepFaceException $e){
+        } catch(DeepFaceException $e) {
             return array("error" => $e->getMessage());
         }
 
@@ -298,7 +298,7 @@ class DeepFace
             throw new InvalidArgumentException("The path [{$img_path}] for image is not a file.");
         }
 
-        try{
+        try {
             $output = $this->run(
                 filepath: __DIR__.'/../scripts/represent.py',
                 data: [
@@ -311,7 +311,7 @@ class DeepFace
                     '{{normalization}}' => $normalization->value,
                 ],
             );
-        } catch(DeepFaceException $e){
+        } catch(DeepFaceException $e) {
             return array("error" => $e->getMessage());
         }
 
@@ -338,7 +338,7 @@ class DeepFace
 
         $errorOutput = $process->getErrorOutput();
 
-        if(!empty($errorOutput)){
+        if(!empty($errorOutput)) {
             if (preg_match_all('/\{(?:[^{}]|(?R))*\}/', $errorOutput, $matches)) {
                 $lastJson = end($matches[0]);
                 $errorResult = json_decode($lastJson, true);
