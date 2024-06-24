@@ -11,8 +11,8 @@ class FacialArea implements JsonSerializable
         public readonly int $y,
         public readonly int $w,
         public readonly int $h,
-        public readonly ?int $left_eye,
-        public readonly ?int $right_eye,
+        public readonly int|array|null $left_eye,
+        public readonly int|array|null $right_eye,
     ) {
     }
 

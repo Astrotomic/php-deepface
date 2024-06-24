@@ -17,6 +17,7 @@ use Astrotomic\DeepFace\Enums\FacialAttributeModel;
 use Astrotomic\DeepFace\Enums\Gender;
 use Astrotomic\DeepFace\Enums\Normalization;
 use Astrotomic\DeepFace\Enums\Race;
+use Astrotomic\DeepFace\Exceptions\DeepFaceException;
 use BadMethodCallException;
 use InvalidArgumentException;
 use SplFileInfo;
@@ -54,6 +55,7 @@ class DeepFace
         bool $enforce_detection = true,
         bool $align = true,
         Normalization $normalization = Normalization::BASE,
+        bool $anti_spoofing = false,
     ): VerifyResult {
         $img1 = new SplFileInfo($img1_path);
         $img2 = new SplFileInfo($img2_path);
@@ -68,9 +70,10 @@ class DeepFace
         $output = $this->run(
             filepath: __DIR__.'/../scripts/verify.py',
             data: [
-                '{{img1_path}}' => $img1->getRealPath(),
-                '{{img2_path}}' => $img2->getRealPath(),
+                '{{img1_path}}' => str_replace('\\', '/', $img1->getRealPath()),
+                '{{img2_path}}' => str_replace('\\', '/', $img2->getRealPath()),
                 '{{enforce_detection}}' => $enforce_detection ? 'True' : 'False',
+                '{{anti_spoofing}}' => $anti_spoofing ? 'True' : 'False',
                 '{{align}}' => $align ? 'True' : 'False',
                 '{{model_name}}' => $model_name->value,
                 '{{detector_backend}}' => $detector_backend->value,
@@ -80,7 +83,7 @@ class DeepFace
         );
 
         return new VerifyResult(
-            verified: $output['verified'] === 'True',
+            verified: $output['verified'],
             distance: $output['distance'],
             threshold: $output['threshold'],
             model: FaceRecognitionModel::from($output['model']),
@@ -104,6 +107,7 @@ class DeepFace
         Detector $detector_backend = Detector::OPENCV,
         bool $align = true,
         bool $silent = false,
+        bool $anti_spoofing = false,
     ): array {
         $img = new SplFileInfo($img_path);
 
@@ -123,9 +127,10 @@ class DeepFace
         $output = $this->run(
             filepath: __DIR__.'/../scripts/analyze.py',
             data: [
-                '{{img_path}}' => $img->getRealPath(),
+                '{{img_path}}' => str_replace('\\', '/', $img->getRealPath()),
                 '{{actions}}' => '['.implode(',', array_map(fn (AnalyzeAction $action) => "'{$action->value}'", $actions)).']',
                 '{{enforce_detection}}' => $enforce_detection ? 'True' : 'False',
+                '{{anti_spoofing}}' => $anti_spoofing ? 'True' : 'False',
                 '{{detector_backend}}' => $detector_backend->value,
                 '{{align}}' => $align ? 'True' : 'False',
                 '{{silent}}' => $silent ? 'True' : 'False',
@@ -159,6 +164,7 @@ class DeepFace
         bool $enforce_detection = true,
         bool $align = true,
         bool $grayscale = false,
+        bool $anti_spoofing = false,
     ): array {
         $img = new SplFileInfo($img_path);
 
@@ -169,9 +175,10 @@ class DeepFace
         $output = $this->run(
             filepath: __DIR__.'/../scripts/extract_faces.py',
             data: [
-                '{{img_path}}' => $img->getRealPath(),
+                '{{img_path}}' => str_replace('\\', '/', $img->getRealPath()),
                 '{{target_size}}' => '['.implode(',', $target_size).']',
                 '{{enforce_detection}}' => $enforce_detection ? 'True' : 'False',
+                '{{anti_spoofing}}' => $anti_spoofing ? 'True' : 'False',
                 '{{detector_backend}}' => $detector_backend->value,
                 '{{align}}' => $align ? 'True' : 'False',
                 '{{grayscale}}' => $grayscale ? 'True' : 'False',
@@ -202,6 +209,7 @@ class DeepFace
         bool $align = true,
         Normalization $normalization = Normalization::BASE,
         bool $silent = false,
+        bool $anti_spoofing = false,
     ): array {
         $img = new SplFileInfo($img_path);
         $db = new SplFileInfo($db_path);
@@ -217,11 +225,12 @@ class DeepFace
         $output = $this->run(
             filepath: __DIR__.'/../scripts/find.py',
             data: [
-                '{{img_path}}' => $img->getRealPath(),
+                '{{img_path}}' => str_replace('\\', '/', $img->getRealPath()),
                 '{{db_path}}' => $db->getRealPath(),
                 '{{model_name}}' => $model_name->value,
                 '{{distance_metric}}' => $distance_metric->value,
                 '{{enforce_detection}}' => $enforce_detection ? 'True' : 'False',
+                '{{anti_spoofing}}' => $anti_spoofing ? 'True' : 'False',
                 '{{detector_backend}}' => $detector_backend->value,
                 '{{align}}' => $align ? 'True' : 'False',
                 '{{normalization}}' => $normalization->value,
@@ -239,6 +248,8 @@ class DeepFace
                     y: $output['source_y'][$i],
                     w: $output['source_w'][$i],
                     h: $output['source_h'][$i],
+                    left_eye: null,
+                    right_eye: null
                 ),
                 model: $model_name,
                 detector_backend: $detector_backend,
@@ -260,6 +271,7 @@ class DeepFace
         Detector $detector_backend = Detector::OPENCV,
         bool $align = true,
         Normalization $normalization = Normalization::BASE,
+        bool $anti_spoofing = false,
     ): array {
         $img = new SplFileInfo($img_path);
 
@@ -270,9 +282,10 @@ class DeepFace
         $output = $this->run(
             filepath: __DIR__.'/../scripts/represent.py',
             data: [
-                '{{img_path}}' => $img->getRealPath(),
+                '{{img_path}}' => str_replace('\\', '/', $img->getRealPath()),
                 '{{model_name}}' => $model_name->value,
                 '{{enforce_detection}}' => $enforce_detection ? 'True' : 'False',
+                '{{anti_spoofing}}' => $anti_spoofing ? 'True' : 'False',
                 '{{detector_backend}}' => $detector_backend->value,
                 '{{align}}' => $align ? 'True' : 'False',
                 '{{normalization}}' => $normalization->value,
@@ -299,6 +312,21 @@ class DeepFace
         $output = $process
             ->mustRun()
             ->getOutput();
+
+        $errorOutput = $process->getErrorOutput();
+
+        if(!empty($errorOutput)) {
+            if (preg_match_all('/\{(?:[^{}]|(?R))*\}/', $errorOutput, $matches)) {
+                $lastJson = end($matches[0]);
+                $errorResult = json_decode($lastJson, true);
+
+                if ($errorResult !== null && isset($errorResult['error'])) {
+                    throw new DeepFaceException($errorResult['error']);
+                } else {
+                    throw new DeepFaceException("Failed to parse error message: " . $lastJson);
+                }
+            }
+        }
 
         $lines = array_values(array_filter(explode(PHP_EOL, $output), function (string $line): bool {
             json_decode($line, true);
