@@ -31,7 +31,7 @@ class DeepFace
 
     public function __construct(string $python = null)
     {
-        $this->python = $python ?? (new ExecutableFinder)->find(
+        $this->python = $python ?? (new ExecutableFinder())->find(
             name: 'python3',
             default: 'python3',
         );
