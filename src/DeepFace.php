@@ -17,14 +17,13 @@ use Astrotomic\DeepFace\Enums\FacialAttributeModel;
 use Astrotomic\DeepFace\Enums\Gender;
 use Astrotomic\DeepFace\Enums\Normalization;
 use Astrotomic\DeepFace\Enums\Race;
+use Astrotomic\DeepFace\Exceptions\DeepFaceException;
 use BadMethodCallException;
 use Exception;
 use InvalidArgumentException;
 use SplFileInfo;
 use Symfony\Component\Process\ExecutableFinder;
 use Symfony\Component\Process\Process;
-
-class DeepFaceAnalysisException extends Exception {}
 
 class DeepFace
 {
@@ -58,7 +57,7 @@ class DeepFace
         bool $align = true,
         Normalization $normalization = Normalization::BASE,
         bool $anti_spoofing = false,
-    ): VerifyResult {
+    ): VerifyResult|array {
         $img1 = new SplFileInfo($img1_path);
         $img2 = new SplFileInfo($img2_path);
 
@@ -85,7 +84,8 @@ class DeepFace
                     '{{normalization}}' => $normalization->value,
                 ],
             );
-        } catch(DeepFaceAnalysisException $e){
+        } catch(DeepFaceException $e){
+            // if any of these images fails the spoof detection, it will throw 'Exception while processing imgX_path'
             return array("error" => $e->getMessage());
         }
 
@@ -144,7 +144,7 @@ class DeepFace
                     '{{silent}}' => $silent ? 'True' : 'False',
                 ],
             );
-        } catch(DeepFaceAnalysisException $e){
+        } catch(DeepFaceException $e){
             return array("error" => $e->getMessage());
         }
 
@@ -196,7 +196,7 @@ class DeepFace
                     '{{grayscale}}' => $grayscale ? 'True' : 'False',
                 ],
             );
-        } catch(DeepFaceAnalysisException $e){
+        } catch(DeepFaceException $e){
             return array("error" => $e->getMessage());
         }
 
@@ -253,7 +253,7 @@ class DeepFace
                     '{{silent}}' => $silent ? 'True' : 'False',
                 ],
             );
-        } catch(DeepFaceAnalysisException $e){
+        } catch(DeepFaceException $e){
             return array("error" => $e->getMessage());
         }
 
@@ -290,6 +290,7 @@ class DeepFace
         Detector $detector_backend = Detector::OPENCV,
         bool $align = true,
         Normalization $normalization = Normalization::BASE,
+        bool $anti_spoofing = false,
     ): array {
         $img = new SplFileInfo($img_path);
 
@@ -297,17 +298,22 @@ class DeepFace
             throw new InvalidArgumentException("The path [{$img_path}] for image is not a file.");
         }
 
-        $output = $this->run(
-            filepath: __DIR__.'/../scripts/represent.py',
-            data: [
-                '{{img_path}}' => str_replace('\\', '/', $img->getRealPath()),
-                '{{model_name}}' => $model_name->value,
-                '{{enforce_detection}}' => $enforce_detection ? 'True' : 'False',
-                '{{detector_backend}}' => $detector_backend->value,
-                '{{align}}' => $align ? 'True' : 'False',
-                '{{normalization}}' => $normalization->value,
-            ],
-        );
+        try{
+            $output = $this->run(
+                filepath: __DIR__.'/../scripts/represent.py',
+                data: [
+                    '{{img_path}}' => str_replace('\\', '/', $img->getRealPath()),
+                    '{{model_name}}' => $model_name->value,
+                    '{{enforce_detection}}' => $enforce_detection ? 'True' : 'False',
+                    '{{anti_spoofing}}' => $anti_spoofing ? 'True' : 'False',
+                    '{{detector_backend}}' => $detector_backend->value,
+                    '{{align}}' => $align ? 'True' : 'False',
+                    '{{normalization}}' => $normalization->value,
+                ],
+            );
+        } catch(DeepFaceException $e){
+            return array("error" => $e->getMessage());
+        }
 
         return array_map(
             fn (array $result) => new RepresentResult(
@@ -338,9 +344,9 @@ class DeepFace
                 $errorResult = json_decode($lastJson, true);
 
                 if ($errorResult !== null && isset($errorResult['error'])) {
-                    throw new DeepFaceAnalysisException($errorResult['error']); // should return 'Spoof detected in the given image'
+                    throw new DeepFaceException($errorResult['error']); // should return 'Spoof detected in the given image'
                 } else {
-                    throw new DeepFaceAnalysisException("Failed to parse error message: " . $lastJson);
+                    throw new DeepFaceException("Failed to parse error message: " . $lastJson);
                 }
             }
         }
