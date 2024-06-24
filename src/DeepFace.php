@@ -343,7 +343,7 @@ class DeepFace
                 $errorResult = json_decode($lastJson, true);
 
                 if ($errorResult !== null && isset($errorResult['error'])) {
-                    throw new DeepFaceException($errorResult['error']); // should return 'Spoof detected in the given image'
+                    throw new DeepFaceException($errorResult['error']);
                 } else {
                     throw new DeepFaceException("Failed to parse error message: " . $lastJson);
                 }
