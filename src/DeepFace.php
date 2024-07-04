@@ -308,31 +308,31 @@ class DeepFace
 
     protected function run(string $filepath, array $data): array|bool
     {
-        try{
+        try {
             $script = $this->script($filepath, $data);
             $process = $this->process($script);
-    
+
             $output = $process
                 ->mustRun()
                 ->getOutput();
-    
+
             $lines = array_values(array_filter(explode(PHP_EOL, $output), function (string $line): bool {
                 json_decode($line, true);
-    
+
                 return json_last_error() === JSON_ERROR_NONE;
             }));
-    
+
             if (empty($lines)) {
                 throw new BadMethodCallException('Python deepface script has not returned with any JSON.');
             }
-    
+
             $json = $lines[0];
-    
+
             return json_decode($json, true, 512, JSON_THROW_ON_ERROR);
-        } catch(Exception $e){
-            if($e instanceof ProcessFailedException){
+        } catch(Exception $e) {
+            if($e instanceof ProcessFailedException) {
                 $fullMessage = $e->getMessage();
-    
+
                 if (preg_match('/ValueError: (.*)/', $fullMessage, $matches)) {
                     $errorMessage = $matches[1];
                     throw new DeepFaceException(trim(strval($errorMessage)));
