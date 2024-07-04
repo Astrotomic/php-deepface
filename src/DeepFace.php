@@ -19,8 +19,10 @@ use Astrotomic\DeepFace\Enums\Normalization;
 use Astrotomic\DeepFace\Enums\Race;
 use Astrotomic\DeepFace\Exceptions\DeepFaceException;
 use BadMethodCallException;
+use Exception;
 use InvalidArgumentException;
 use SplFileInfo;
+use Symfony\Component\Process\Exception\ProcessFailedException;
 use Symfony\Component\Process\ExecutableFinder;
 use Symfony\Component\Process\Process;
 
@@ -306,41 +308,41 @@ class DeepFace
 
     protected function run(string $filepath, array $data): array|bool
     {
-        $script = $this->script($filepath, $data);
-        $process = $this->process($script);
-
-        $output = $process
-            ->mustRun()
-            ->getOutput();
-
-        $errorOutput = $process->getErrorOutput();
-
-        if(!empty($errorOutput)) {
-            if (preg_match_all('/\{(?:[^{}]|(?R))*\}/', $errorOutput, $matches)) {
-                $lastJson = end($matches[0]);
-                $errorResult = json_decode($lastJson, true);
-
-                if ($errorResult !== null && isset($errorResult['error'])) {
-                    throw new DeepFaceException($errorResult['error']);
+        try{
+            $script = $this->script($filepath, $data);
+            $process = $this->process($script);
+    
+            $output = $process
+                ->mustRun()
+                ->getOutput();
+    
+            $lines = array_values(array_filter(explode(PHP_EOL, $output), function (string $line): bool {
+                json_decode($line, true);
+    
+                return json_last_error() === JSON_ERROR_NONE;
+            }));
+    
+            if (empty($lines)) {
+                throw new BadMethodCallException('Python deepface script has not returned with any JSON.');
+            }
+    
+            $json = $lines[0];
+    
+            return json_decode($json, true, 512, JSON_THROW_ON_ERROR);
+        } catch(Exception $e){
+            if($e instanceof ProcessFailedException){
+                $fullMessage = $e->getMessage();
+    
+                if (preg_match('/ValueError: (.*)/', $fullMessage, $matches)) {
+                    $errorMessage = $matches[1];
+                    throw new DeepFaceException(trim(strval($errorMessage)));
                 } else {
-                    throw new DeepFaceException("Failed to parse error message: " . $lastJson);
+                    throw new BadMethodCallException("Couldn't get the error message.");
                 }
+            } else {
+                throw new BadMethodCallException("Something went wrong.");
             }
         }
-
-        $lines = array_values(array_filter(explode(PHP_EOL, $output), function (string $line): bool {
-            json_decode($line, true);
-
-            return json_last_error() === JSON_ERROR_NONE;
-        }));
-
-        if (empty($lines)) {
-            throw new BadMethodCallException('Python deepface script has not returned with any JSON.');
-        }
-
-        $json = $lines[0];
-
-        return json_decode($json, true, 512, JSON_THROW_ON_ERROR);
     }
 
     protected function process(string $script): Process
