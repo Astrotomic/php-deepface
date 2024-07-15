@@ -337,9 +337,11 @@ class DeepFace
                     $errorMessage = $matches[1];
                     throw new DeepFaceException(trim(strval($errorMessage)));
                 } else {
+                    // Should return this or $fullMessage?
                     throw new BadMethodCallException("Couldn't get the error message.");
                 }
             } else {
+                // Should return the exception message?
                 throw new BadMethodCallException("Something went wrong.");
             }
         }
@@ -364,6 +366,8 @@ class DeepFace
 
         $script = trim(strtr($template, $data));
 
-        return str_replace(PHP_EOL, ' ', $script);
+        $newline_regex = '/(\r\n)|\r|\n/';
+
+        return preg_replace($newline_regex, ' ', $script);
     }
 }
