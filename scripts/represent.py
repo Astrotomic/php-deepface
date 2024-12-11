@@ -1,5 +1,5 @@
-import json;
 import sys;
+import json;
 from deepface import DeepFace;
 
 try:
@@ -7,10 +7,12 @@ try:
         img_path = "{{img_path}}",
         model_name = "{{model_name}}",
         enforce_detection = {{enforce_detection}},
-        anti_spoofing = "{{anti_spoofing}}",
         detector_backend = "{{detector_backend}}",
         align = {{align}},
-        normalization = "{{normalization}}"
+        expand_percentage = {{expand_percentage}},
+        normalization = "{{normalization}}",
+        anti_spoofing = "{{anti_spoofing}}",
+        max_faces = {{max_faces}},
     );
 
     print(json.dumps(result, default=str))
