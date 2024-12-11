@@ -26,8 +26,7 @@ class AnalyzeResult implements JsonSerializable
         public readonly ?Gender $dominant_gender,
         public readonly ?array $race,
         public readonly ?Race $dominant_race,
-    ) {
-    }
+    ) {}
 
     public function jsonSerialize(): array
     {

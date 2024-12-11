@@ -21,8 +21,7 @@ class VerifyResult implements JsonSerializable
         public readonly string $img2_path,
         public readonly FacialArea $img2_facial_area,
         public readonly float $time,
-    ) {
-    }
+    ) {}
 
     public function jsonSerialize(): array
     {

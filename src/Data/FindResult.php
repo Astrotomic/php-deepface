@@ -17,8 +17,7 @@ class FindResult implements JsonSerializable
         public readonly Detector $detector_backend,
         public readonly DistanceMetric $distance_metric,
         public readonly float $distance,
-    ) {
-    }
+    ) {}
 
     public function jsonSerialize(): array
     {

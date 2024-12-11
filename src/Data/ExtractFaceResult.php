@@ -12,8 +12,7 @@ class ExtractFaceResult implements JsonSerializable
         public readonly FacialArea $facial_area,
         public readonly float $confidence,
         public readonly Detector $detector_backend,
-    ) {
-    }
+    ) {}
 
     public function jsonSerialize(): array
     {

@@ -14,8 +14,7 @@ class RepresentResult implements JsonSerializable
         public readonly FacialArea $facial_area,
         public readonly FaceRecognitionModel $model,
         public readonly Detector $detector_backend,
-    ) {
-    }
+    ) {}
 
     public function jsonSerialize(): array
     {

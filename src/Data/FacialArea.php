@@ -13,8 +13,7 @@ class FacialArea implements JsonSerializable
         public readonly int $h,
         public readonly int|array|null $left_eye,
         public readonly int|array|null $right_eye,
-    ) {
-    }
+    ) {}
 
     public function jsonSerialize(): array
     {
