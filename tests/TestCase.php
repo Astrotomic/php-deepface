@@ -9,7 +9,7 @@ abstract class TestCase extends BaseTestCase
 {
     protected function deepface(): DeepFace
     {
-        return new DeepFace('/opt/homebrew/bin/python3.11');
+        return new DeepFace();
     }
 
     protected function image(string $img): string
