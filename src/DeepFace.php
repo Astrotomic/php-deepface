@@ -38,6 +38,14 @@ class DeepFace
         );
     }
 
+    public function version(): string
+    {
+        return $this->run(
+            filepath: __DIR__.'/../scripts/version.py',
+            data: [],
+        );
+    }
+
     public function buildModel(FaceRecognitionModel|FacialAttributeModel $model_name): bool
     {
         return $this->run(
@@ -330,7 +338,7 @@ class DeepFace
         );
     }
 
-    protected function run(string $filepath, array $data): array|bool
+    protected function run(string $filepath, array $data): array|bool|string
     {
         $script = $this->script($filepath, $data);
         $process = $this->process($script);

@@ -8,6 +8,12 @@ use Astrotomic\DeepFace\Enums\Gender;
 use Astrotomic\DeepFace\Enums\Race;
 use PHPUnit\Framework\Assert;
 
+it('version', function (): void {
+    $version = $this->deepface()->version();
+
+    Assert::assertSame('0.0.93', $version);
+});
+
 describe('verify', function (): void {
     it('verify: img1', function (): void {
         $img1 = $this->image('img1.jpg');
