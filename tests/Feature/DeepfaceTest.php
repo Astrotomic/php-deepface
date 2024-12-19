@@ -6,8 +6,8 @@ use Astrotomic\DeepFace\Enums\Gender;
 use Astrotomic\DeepFace\Enums\Race;
 use PHPUnit\Framework\Assert;
 
-describe('analyze', function ():void {
-    it('analyzes: img1', function ():void {
+describe('analyze', function (): void {
+    it('analyzes: img1', function (): void {
         $img = $this->image('img1.jpg');
         $results = $this->deepface()->analyze($img);
 
