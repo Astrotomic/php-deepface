@@ -37,13 +37,19 @@
         "symfony/process": "^6.0|^7.0"
     },
     "require-dev": {
-        "laravel/pint": "^1.13"
+        "laravel/pint": "^1.13",
+        "pestphp/pest": "^3.7"
     },
     "minimum-stability": "dev",
     "prefer-stable": true,
     "autoload": {
         "psr-4": {
             "Astrotomic\\DeepFace\\": "src"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Tests\\": "tests"
         }
     },
     "config": {
