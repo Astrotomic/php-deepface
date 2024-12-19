@@ -13,5 +13,5 @@ jobs:
       - uses: shivammathur/setup-php@v2
         with:
           php-version: 8.1
-      - run: composer install --no-interaction --no-scripts
+      - run: composer update --no-interaction --no-scripts
       - run: vendor/bin/pint --test
