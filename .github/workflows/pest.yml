@@ -17,6 +17,6 @@ jobs:
         with:
           python-version: '3.11'
       - run: python -m pip install --upgrade pip
-      - run: pip install deepface
+      - run: pip install deepface tf-keras
       - run: composer update --no-interaction --no-scripts
       - run: vendor/bin/pest
