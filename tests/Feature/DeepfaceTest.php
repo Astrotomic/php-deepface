@@ -11,7 +11,7 @@ use PHPUnit\Framework\Assert;
 it('version', function (): void {
     $version = $this->deepface()->version();
 
-    Assert::assertSame('0.0.93', $version);
+    Assert::assertSame('0.0.98', $version);
 });
 
 describe('verify', function (): void {
